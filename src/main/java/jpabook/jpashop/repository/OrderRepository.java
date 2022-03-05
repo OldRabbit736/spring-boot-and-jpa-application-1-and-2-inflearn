@@ -57,4 +57,17 @@ public class OrderRepository {
                         " join fetch o.delivery d", Order.class
         ).getResultList();
     }
+
+    // 단점: 페이징 불가 (되기는 하지만 db 수준에서가 아니라 memory에서 페이징 처리를 함, 즉 모든 데이터를 db에서 가져온다! 절대 쓰면 안된다.)
+    // 컬렉션 페치 조인은 최대 1개만 사용 가능. 둘 이상 사용하면 데이터가 부정합하게 조회될 수 있다.
+    public List<Order> findAllWithItem() {
+        return em.createQuery(
+                "select distinct o from Order o" +
+                        " join fetch o.member m" +
+                        " join fetch o.delivery d" +
+                        " join fetch o.orderItems oi" + // 이 부분(컬렉션) 때문에 db 페이징 자체가 불가능해 짐 (row 개수 뻥튀기)
+                        " join fetch oi.item i", Order.class)
+//                .setFirstResult(1).setMaxResults(100)   //firstResult/maxResults specified with collection fetch; applying in memory!
+                .getResultList();
+    }
 }
