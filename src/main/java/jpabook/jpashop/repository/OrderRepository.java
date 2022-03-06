@@ -62,12 +62,22 @@ public class OrderRepository {
     // 컬렉션 페치 조인은 최대 1개만 사용 가능. 둘 이상 사용하면 데이터가 부정합하게 조회될 수 있다.
     public List<Order> findAllWithItem() {
         return em.createQuery(
-                "select distinct o from Order o" +
-                        " join fetch o.member m" +
-                        " join fetch o.delivery d" +
-                        " join fetch o.orderItems oi" + // 이 부분(컬렉션) 때문에 db 페이징 자체가 불가능해 짐 (row 개수 뻥튀기)
-                        " join fetch oi.item i", Order.class)
+                        "select distinct o from Order o" +
+                                " join fetch o.member m" +
+                                " join fetch o.delivery d" +
+                                " join fetch o.orderItems oi" + // 이 부분(컬렉션) 때문에 db 페이징 자체가 불가능해 짐 (row 개수 뻥튀기)
+                                " join fetch oi.item i", Order.class)
 //                .setFirstResult(1).setMaxResults(100)   //firstResult/maxResults specified with collection fetch; applying in memory!
+                .getResultList();
+    }
+
+    public List<Order> findAllWithMemberDelivery(int offset, int limit) {
+        return em.createQuery(
+                        "select o from Order o" +
+                                " join fetch o.member m" +
+                                " join fetch o.delivery d", Order.class)
+                .setFirstResult(offset)
+                .setMaxResults(limit)
                 .getResultList();
     }
 }
